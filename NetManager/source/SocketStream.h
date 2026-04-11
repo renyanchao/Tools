@@ -24,6 +24,10 @@ public:
 
     size_t Write(const void* data, size_t len)
     {
+        if(GetFreeSize() < len)
+        {
+            Resize(len);
+        }
         size_t this_write_size = std::min(len, GetFreeSize());
         if(this_write_size <= 0)return 0;
         // 分两段写入（可能绕回）
