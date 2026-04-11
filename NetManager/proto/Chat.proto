@@ -1,0 +1,15 @@
+syntax = "proto3";  // 指定使用 proto3 语法
+
+package game.chat; // 定义包名，防止命名冲突
+
+// 登录请求消息
+message CGChat {
+  string username = 1; // 用户名，字段编号为1
+  string password = 2; // 密码，字段编号为2
+}
+
+// 登录响应消息
+message GCChat {
+  int32 result_code = 1;  // 返回码，0表示成功，字段编号为1
+  string message = 2;     // 附加信息，字段编号为2
+}
