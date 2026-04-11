@@ -90,6 +90,7 @@ int main(int argc, char* argv[]) {
     socket_t sock = connect_to_server(server_ip, port);
     if (sock == INVALID_SOCKET_VAL) {
         cleanup_network();
+        std::cout << "connect to server fail" << std::endl;
         return 1;
     }
 
@@ -119,6 +120,7 @@ int main(int argc, char* argv[]) {
             std::cerr << "send() error: " << GET_LAST_ERROR() << std::endl;
             break;
         }
+        std::cout << "send to server bytesize = " << bytes_sent << std::endl;
 
         // 接收回显数据
         int bytes_received = recv(sock, buffer, sizeof(buffer) - 1, 0);
