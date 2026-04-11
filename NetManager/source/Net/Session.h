@@ -40,20 +40,20 @@ public:
     bool ProcessInput();
     bool ProcessCommand();
     bool ProcessOutput(); 
-
-
+    void Close();
+    bool IsDead()const { return m_IsDead; }
     Packet* ReadPacket();
     void WritePacket(Packet* pPacket);
 
     socket_t GetSocket()const{return m_fd;}
-    Socket_IOStream& GetReadStream(){return m_ReadStream;}
-    Socket_IOStream& GetWriteStream(){return m_WriteStream;}
+
     
 private:
     Socket_IOStream m_ReadStream;
     Socket_IOStream m_WriteStream;
 
     socket_t m_fd = -1;
+    bool m_IsDead = false;
 };
 
 

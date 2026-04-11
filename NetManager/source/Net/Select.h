@@ -18,6 +18,7 @@ public:
     void ProcessInput();
     void ProcessCommand();
     void ProcessOutput();
+    void ProcessClose();
     void Tick();
     void AcceptNewSession();
     void AddSession(Session* pSession);

@@ -39,6 +39,7 @@ void Select::AcceptNewSession()
         return;
     }
     client_sessionlist.push_back(pSession);
+    std::cout << "Accept New client socketid = " << client_fd << std::endl;
     std::cout << "Accept New client connected. Total clients: " << client_sessionlist.size() << std::endl;
     
 }
@@ -48,6 +49,7 @@ void Select::Tick() //Tick Once
     ProcessInput();
     ProcessCommand();
     ProcessOutput();
+    ProcessClose();
 }
 void Select::ProcessInput()
 {
@@ -89,9 +91,10 @@ void Select::ProcessInput()
     {
         Session* pSession = *it;
         if(pSession == nullptr)continue;
-        if (FD_ISSET(pSession->GetSocket(), &read_fds)) 
+        if (FD_ISSET(pSession->GetSocket(), &read_fds) == false)continue;
+        if (pSession->ProcessInput() == false)
         {
-            pSession->ProcessInput();
+            pSession->Close();
         }
     }
 
@@ -101,7 +104,10 @@ void Select::ProcessCommand()
     for(auto it = client_sessionlist.begin(); it != client_sessionlist.end(); it++)
     {
         Session* pSession = *it;
-        pSession->ProcessCommand();
+        if (pSession->ProcessCommand() == false)
+        {
+            pSession->Close();
+        }
     }
 }
 void Select::ProcessOutput()
@@ -109,7 +115,26 @@ void Select::ProcessOutput()
     for(auto it = client_sessionlist.begin(); it != client_sessionlist.end(); it++)
     {
         Session* pSession = *it;
-        pSession->ProcessOutput();
+        if (pSession->ProcessOutput() == false)
+        {
+            pSession->Close();
+        }
+    }
+}
+void Select::ProcessClose()
+{
+    for (auto it = client_sessionlist.begin(); it != client_sessionlist.end();)
+    {
+        Session* pSession = *it;
+        if (pSession->IsDead())
+        {
+            it = client_sessionlist.erase(it);
+            std::cout << "Session socket_id = " << pSession->GetSocket() << "will close" << std::endl;
+        }
+        else
+        {
+            it++;
+        }
     }
 }
 

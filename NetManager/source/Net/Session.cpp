@@ -16,6 +16,7 @@ bool Session::ProcessInput()
         std::cerr << "recv() error: " << GET_LAST_ERROR() << std::endl;
         return false;
     }
+    
     std::cout<<"Session ProcessInput:"<<m_fd<<" bytesize="<<len<<std::endl;
     m_ReadStream.Write(buffer, len);
     return true;
@@ -46,11 +47,20 @@ bool Session::ProcessOutput()
     {
         return true;
     }
+	// if(error)
+    // {
+    //     return false;
+    // }
     std::cout<<"Session ProcessOutput:"<<m_fd<<" bytesize="<<len<<std::endl;
     send(m_fd, buff, len, 0);
     return true;
 }
-
+void Session::Close()
+{
+    m_IsDead = true;
+    close_socket(m_fd);
+    std::cout << "Session mark needclose. And Close SocketID = " << m_fd << std::endl;
+}
 
 Packet* Session::ReadPacket()
 {
