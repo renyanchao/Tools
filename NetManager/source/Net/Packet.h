@@ -1,3 +1,5 @@
+#pragma once
+
 struct PacketHeader
 {
     int32_t m_nPacketId;

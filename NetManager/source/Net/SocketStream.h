@@ -1,10 +1,13 @@
+#pragma once
+
 #include<iostream>
 #include<memory>
 #include<cstring>
 #include<math.h>
+
 struct Socket_IOStream
 {
-private:
+public:
     char*   m_pBuffer = nullptr;
     size_t  m_nSize = 0;
     size_t  m_ReadPos = 0;
@@ -111,15 +114,46 @@ public:
 
 };
 
+#ifdef _WIN32
+#define _WIN32_WINNT 0x0601
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+typedef SOCKET socket_t;
+#define INVALID_SOCKET_VAL INVALID_SOCKET
+#define SOCKET_ERROR_VAL   SOCKET_ERROR
+#define close_socket(s)    closesocket(s)
+#define GET_LAST_ERROR()   WSAGetLastError()
+#else
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/epoll.h>
+#include <errno.h>
+#include <fcntl.h>
+typedef int socket_t;
+#define INVALID_SOCKET_VAL (-1)
+#define SOCKET_ERROR_VAL   (-1)
+#define close_socket(s)    close(s)
+#define GET_LAST_ERROR()   errno
+#endif
 
 struct Socket_IStream : Socket_IOStream
 {
+    Socket_IStream(int32_t size) :Socket_IOStream(size){}
     /* data */
+    bool Fill(socket_t* fd);
     
 };
 
 struct Socket_OStream : Socket_IOStream
 {
     /* data */
+    Socket_OStream(int32_t size) :Socket_IOStream(size) {}
+    bool Flush(socket_t* fd);
 };
 

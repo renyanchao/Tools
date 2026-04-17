@@ -1,25 +1,10 @@
 #include"Session.h"
 #include"Packet.h"
 
+
 bool Session::ProcessInput()
 {
-
-    char buffer[1024] = {0};
-    int len = recv(m_fd, buffer, sizeof(buffer) - 1, 0);
-    if(len == 0)
-    {
-        std::cout << "Client disconnected gracefully." << std::endl;
-        return false;
-    }
-    if(len < 0)
-    {
-        std::cerr << "recv() error: " << GET_LAST_ERROR() << std::endl;
-        return false;
-    }
-    
-    std::cout<<"Session ProcessInput:"<<m_fd<<" bytesize="<<len<<std::endl;
-    m_ReadStream.Write(buffer, len);
-    return true;
+    return m_ReadStream.Fill(&m_fd);
 }
 bool Session::ProcessCommand()
 {
@@ -41,19 +26,7 @@ bool Session::ProcessCommand()
 }
 bool Session::ProcessOutput()
 {
-    char buff[1024] = {0};
-    int len = m_WriteStream.Read(buff, sizeof(buff));
-    if(len <= 0)
-    {
-        return true;
-    }
-	// if(error)
-    // {
-    //     return false;
-    // }
-    std::cout<<"Session ProcessOutput:"<<m_fd<<" bytesize="<<len<<std::endl;
-    send(m_fd, buff, len, 0);
-    return true;
+    return m_WriteStream.Flush(&m_fd);
 }
 void Session::Close()
 {
