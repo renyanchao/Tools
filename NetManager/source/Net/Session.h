@@ -25,8 +25,8 @@ private:
 
     
 private:
-    Socket_IStream m_ReadStream;
-    Socket_OStream m_WriteStream;
+    SocketStream m_ReadStream;
+    SocketStream m_WriteStream;
 
     socket_t m_fd = -1;
     bool m_IsDead = false;

@@ -1,5 +1,5 @@
 #include "Epoll.h"
-#ifndef WIN32
+#ifndef _WIN32
 // 设置文件描述符为非阻塞模式
 int set_nonblocking(int fd) {
     int flags = fcntl(fd, F_GETFL, 0);
@@ -11,16 +11,17 @@ int set_nonblocking(int fd) {
 bool Epoll::Init()
 {
         if (!init_network()) {
-        return 1;
+        return false;
     }
 
     server_fd = create_listen_socket(PORT);
     if (server_fd == INVALID_SOCKET_VAL) {
         cleanup_network();
-        return 1;
+        return false;
     }
 
     std::cout << "selector server listening on port " << PORT << std::endl;
+    return true;
 }
 
 socket_t Epoll::create_listen_socket(int port)

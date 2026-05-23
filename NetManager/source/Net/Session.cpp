@@ -1,5 +1,6 @@
 #include"Session.h"
 #include"Packet.h"
+#include <iostream>
 
 
 bool Session::ProcessInput()

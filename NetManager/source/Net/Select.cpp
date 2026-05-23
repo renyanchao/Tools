@@ -1,18 +1,21 @@
-#include "Select.h"
+#ifdef _WIN32
 
+#include "Select.h"
+#include "WS2tcpip.h"
 bool Select::Init() 
 {
     if (!init_network()) {
-        return 1;
+        return false;
     }
 
     listen_fd = create_listen_socket(PORT);
     if (listen_fd == INVALID_SOCKET_VAL) {
         cleanup_network();
-        return 1;
+        return false;
     }
 
     std::cout << "selector server listening on port " << PORT << std::endl;
+    return true;
 }
 
 void Select::AcceptNewSession()
@@ -223,4 +226,7 @@ void Select::stop()
     }
     cleanup_network();
 }
+
+#endif
+
 

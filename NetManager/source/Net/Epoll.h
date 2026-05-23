@@ -1,5 +1,5 @@
 #pragma once
-
+#ifndef _WIN32
 #include <iostream>
 #include <cstring>
 #include <vector>
@@ -12,7 +12,7 @@ const int PORT = 8888;
 const int BUFFER_SIZE = 1024;
 const int MAX_CLIENTS = FD_SETSIZE - 10;  // 为监听套接字留出空间
 
-#ifndef WIN32
+
 class Epoll
 {
 public:
