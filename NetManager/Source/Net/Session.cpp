@@ -1,4 +1,4 @@
-#include "Session.h"
+﻿#include "Session.h"
 
 #include "Packet.h"
 #include "Chat.pb.h"
@@ -17,6 +17,16 @@ bool Session::ProcessCommand()
 {
     while (true)
     {
+		PacketHeader header;
+		if (m_ReadStream.Peek(&header, sizeof(header)) == false)
+		{
+			return true; // 当前还没有完整包
+		}
+
+		if (header.m_nPacketSize <= 0)
+		{
+            return false; // 包头长度非法
+		}
         std::unique_ptr<PacketData> packet = ReadPacket();
         if (packet == nullptr)
         {
@@ -41,7 +51,7 @@ void Session::Close()
 {
     m_IsDead = true;
     close_socket(m_fd);
-    std::cout << "Session mark needclose. And Close SocketID = " << m_fd << std::endl;
+    std::cout << "Session mark need close. And Close SocketID = " << m_fd << std::endl;
 }
 
 std::unique_ptr<PacketData> Session::ReadPacket()

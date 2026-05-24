@@ -1,4 +1,4 @@
-# Building NetManager
+﻿# Building NetManager
 
 NetManager uses CMake and vcpkg manifest mode for third-party C++ dependencies.
 The project no longer links against `Tool/libprotobufd.lib`; protobuf is resolved by vcpkg for the current platform and compiler.

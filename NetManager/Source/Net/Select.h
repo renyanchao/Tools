@@ -1,8 +1,9 @@
-#pragma once
+﻿#pragma once
 #ifdef _WIN32
 #include <iostream>
 #include <cstring>
 #include <vector>
+#include <memory>
 
 #include "Session.h"
 
@@ -10,8 +11,7 @@
 #include <WinSock2.h>
 const int PORT = 8888;
 const int BUFFER_SIZE = 1024;
-const int MAX_CLIENTS = FD_SETSIZE - 10;  // 为监听套接字留出空间
-
+const int MAX_CLIENTS = FD_SETSIZE - 10;
 
 class Select
 {
@@ -29,10 +29,9 @@ private:
     void cleanup_network();
     socket_t create_listen_socket(int port);
     void stop();
-    
+
 private:
     socket_t listen_fd;
-
-    std::vector<Session*> client_sessionlist;
+    std::vector<std::unique_ptr<Session>> client_sessionlist;
 };
 #endif

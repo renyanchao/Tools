@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+﻿#!/usr/bin/env sh
 set -u
 
 PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)

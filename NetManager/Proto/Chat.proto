@@ -1,4 +1,4 @@
-syntax = "proto3";  // 指定使用 proto3 语法
+﻿syntax = "proto3";  // 指定使用 proto3 语法
 
 package game.chat; // 定义包名，防止命名冲突
 

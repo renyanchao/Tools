@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _WIN32
 #include <iostream>
 #include <cstring>
@@ -10,8 +10,7 @@
 
 const int PORT = 8888;
 const int BUFFER_SIZE = 1024;
-const int MAX_CLIENTS = FD_SETSIZE - 10;  // 为监听套接字留出空间
-
+const int MAX_CLIENTS = FD_SETSIZE - 10;  // 为监听套接字预留空间
 
 class Epoll
 {
@@ -25,7 +24,7 @@ private:
     void cleanup_network();
     socket_t create_listen_socket(int port);
     void stop();
-    
+
 private:
     socket_t server_fd;
     socket_t epoll_fd;

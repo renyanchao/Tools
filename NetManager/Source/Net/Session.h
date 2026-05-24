@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <memory>
 
@@ -19,6 +19,7 @@ public:
     bool ProcessOutput();
     void Close();
     bool IsDead() const { return m_IsDead; }
+    bool HasPendingOutput() const { return m_WriteStream.GetUsedSize() > 0; }
     std::unique_ptr<PacketData> ReadPacket();
     bool WritePacket(const PacketData& packet);
 

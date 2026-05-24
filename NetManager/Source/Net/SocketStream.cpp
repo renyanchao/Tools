@@ -1,4 +1,4 @@
-#include "SocketStream.h"
+﻿#include "SocketStream.h"
 
 #include <algorithm>
 #include <cstring>
@@ -195,19 +195,20 @@ bool SocketStream::Fill(socket_t* pSocket)
     if (pSocket == nullptr) return false;
 
     socket_t fd = *pSocket;
-    int32_t nCanReadSize = GetSocketCanRead(fd);
-    if (nCanReadSize <= 0) return false;
+    int32_t nSocketCanReadSize = GetSocketCanRead(fd);
+    if (nSocketCanReadSize <= 0) return false;
 
-    if (GetFreeSize() < static_cast<size_t>(nCanReadSize))
+    if (GetFreeSize() < static_cast<size_t>(nSocketCanReadSize))
     {
-        if (Resize(nCanReadSize) == false)
+        if (Resize(nSocketCanReadSize) == false)
         {
+            // 扩容失败，关闭连接
             return false;
         }
     }
 
-    size_t this_write_size = std::min(static_cast<size_t>(nCanReadSize), GetFreeSize());
-    if (this_write_size == 0) return false;
+    size_t this_write_size = std::min(static_cast<size_t>(nSocketCanReadSize), GetFreeSize());
+    if (this_write_size <= 0) return false;
 
     size_t first_chunk = std::min(this_write_size, GetBuffSize() - m_WritePos);
 

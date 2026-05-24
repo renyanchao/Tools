@@ -1,8 +1,9 @@
-#ifdef _WIN32
+﻿#ifdef _WIN32
 
 #include "Select.h"
 #include "WS2tcpip.h"
-bool Select::Init() 
+
+bool Select::Init()
 {
     if (!init_network()) {
         return false;
@@ -27,129 +28,127 @@ void Select::AcceptNewSession()
         std::cerr << "accept() error: " << GET_LAST_ERROR() << std::endl;
         return;
     }
+
     u_long mode = 1;
     ioctlsocket(client_fd, FIONBIO, &mode);
     if (client_sessionlist.size() >= MAX_CLIENTS) {
         std::cerr << "Too many clients, rejecting new connection." << std::endl;
         close_socket(client_fd);
         return;
-    } 
-    Session* pSession = new Session(client_fd);
-    if(pSession == nullptr)
-    {
-        std::cerr << "New Session() fail." << std::endl;
-        close_socket(client_fd);
-        return;
     }
-    client_sessionlist.push_back(pSession);
+
+    client_sessionlist.push_back(std::make_unique<Session>(client_fd));
     std::cout << "Accept New client socketid = " << client_fd << std::endl;
     std::cout << "Accept New client connected. Total clients: " << client_sessionlist.size() << std::endl;
-    
 }
 
-void Select::Tick() //Tick Once
+void Select::Tick()
 {
     ProcessInput();
     ProcessCommand();
     ProcessOutput();
     ProcessClose();
 }
+
 void Select::ProcessInput()
 {
     fd_set read_fds;
-    int max_fd = static_cast<int>(listen_fd);  // 仅用于 Linux/Unix，Windows 忽略
-
-
+    fd_set write_fds;
     FD_ZERO(&read_fds);
+    FD_ZERO(&write_fds);
     FD_SET(listen_fd, &read_fds);
 
-    // 记录最大文件描述符（Linux 需要）
     int current_max_fd = static_cast<int>(listen_fd);
-    for(Session* pSession : client_sessionlist){
+    for (const auto& sessionPtr : client_sessionlist) {
+        Session* pSession = sessionPtr.get();
         socket_t sock = pSession->GetSocket();
         FD_SET(sock, &read_fds);
+        if (pSession->HasPendingOutput()) {
+            FD_SET(sock, &write_fds);
+        }
         if (static_cast<int>(sock) > current_max_fd) {
             current_max_fd = static_cast<int>(sock);
         }
     }
 
-    // 调用 select
-    // Windows: 第一个参数被忽略，但传递 0 或 current_max_fd+1 均可
-    int activity = select(current_max_fd + 1, &read_fds, nullptr, nullptr, nullptr);
+    timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 1000;
+
+    int activity = select(current_max_fd + 1, &read_fds, &write_fds, nullptr, &timeout);
     if (activity == SOCKET_ERROR_VAL) {
         std::cerr << "select() error: " << GET_LAST_ERROR() << std::endl;
-        //break;
         return;
     }
 
-    // 1. 处理新连接
-    if (FD_ISSET(listen_fd, &read_fds)) 
-    {
+    if (FD_ISSET(listen_fd, &read_fds)) {
         std::cout << "New client connected." << std::endl;
         AcceptNewSession();
     }
 
-    // 2. 处理现有客户端的数据
-    for(auto it = client_sessionlist.begin(); it != client_sessionlist.end(); it++)
-    {
-        Session* pSession = *it;
-        if(pSession == nullptr)continue;
-        if (FD_ISSET(pSession->GetSocket(), &read_fds) == false)continue;
-        if (pSession->ProcessInput() == false)
-        {
+    for (auto& sessionPtr : client_sessionlist) {
+        Session* pSession = sessionPtr.get();
+        if (!FD_ISSET(pSession->GetSocket(), &read_fds)) {
+            continue;
+        }
+        if (!pSession->ProcessInput()) {
             pSession->Close();
         }
     }
 
+    for (auto& sessionPtr : client_sessionlist) {
+        Session* pSession = sessionPtr.get();
+        if (!FD_ISSET(pSession->GetSocket(), &write_fds)) {
+            continue;
+        }
+        if (!pSession->ProcessOutput()) {
+            pSession->Close();
+        }
+    }
 }
+
 void Select::ProcessCommand()
 {
-    for(auto it = client_sessionlist.begin(); it != client_sessionlist.end(); it++)
+    for (auto& sessionPtr : client_sessionlist)
     {
-        Session* pSession = *it;
-        if (pSession->ProcessCommand() == false)
+        Session* pSession = sessionPtr.get();
+        if (!pSession->ProcessCommand())
         {
             pSession->Close();
         }
     }
 }
+
 void Select::ProcessOutput()
 {
-    for(auto it = client_sessionlist.begin(); it != client_sessionlist.end(); it++)
-    {
-        Session* pSession = *it;
-        if (pSession->ProcessOutput() == false)
-        {
-            pSession->Close();
-        }
-    }
+    // Output is handled by ProcessInput() through write readiness.
 }
+
 void Select::ProcessClose()
 {
     for (auto it = client_sessionlist.begin(); it != client_sessionlist.end();)
     {
-        Session* pSession = *it;
+        Session* pSession = it->get();
         if (pSession->IsDead())
         {
+            socket_t socketId = pSession->GetSocket();
             it = client_sessionlist.erase(it);
-            std::cout << "Session socket_id = " << pSession->GetSocket() << "will close" << std::endl;
-            delete pSession;
+            std::cout << "Session socket_id = " << socketId << " will close" << std::endl;
         }
         else
         {
-            it++;
+            ++it;
         }
     }
 }
 
-
 void Select::AddSession(Session* pSession)
 {
-    if(pSession == nullptr)
+    if (pSession == nullptr)
     {
         return;
     }
-    client_sessionlist.push_back(pSession);
+    client_sessionlist.push_back(std::unique_ptr<Session>(pSession));
     std::cout << "Accept New client connected. Total clients: " << client_sessionlist.size() << std::endl;
 }
 
@@ -166,7 +165,6 @@ bool Select::init_network() {
 
 void Select::cleanup_network() {
 #ifdef _WIN32
-    WSADATA wsaData;
     WSACleanup();
 #endif
 }
@@ -178,7 +176,6 @@ socket_t Select::create_listen_socket(int port) {
         return INVALID_SOCKET_VAL;
     }
 
-    // 允许端口重用（避免 TIME_WAIT 问题）
     int opt = 1;
 #ifdef _WIN32
     setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&opt, sizeof(opt));
@@ -204,12 +201,10 @@ socket_t Select::create_listen_socket(int port) {
         return INVALID_SOCKET_VAL;
     }
 
-    // 非阻塞模式（可选，但建议配合 select 时设置）
 #ifndef _WIN32
     int flags = fcntl(listen_fd, F_GETFL, 0);
     fcntl(listen_fd, F_SETFL, flags | O_NONBLOCK);
 #else
-    // Windows 下设置非阻塞
     u_long mode = 1;
     ioctlsocket(listen_fd, FIONBIO, &mode);
 #endif
@@ -219,15 +214,11 @@ socket_t Select::create_listen_socket(int port) {
 
 void Select::stop()
 {
-    // 清理资源
     close_socket(listen_fd);
-    for(Session* pSession : client_sessionlist){
-        socket_t sock = pSession->GetSocket();
-        close_socket(sock);
+    for (const auto& sessionPtr : client_sessionlist) {
+        close_socket(sessionPtr->GetSocket());
     }
     cleanup_network();
 }
 
 #endif
-
-
