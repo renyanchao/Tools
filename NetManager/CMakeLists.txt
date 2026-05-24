@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.11)
 project(NETMANAGER)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(Protobuf CONFIG REQUIRED)
+
 if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     foreach(flag_var
@@ -19,4 +25,4 @@ if (MSVC)
     endforeach()
 endif()
 
-add_subdirectory(source)
+add_subdirectory(Source)
