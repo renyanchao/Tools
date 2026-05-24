@@ -22,7 +22,8 @@ public:
     size_t m_nSize = 0;
     size_t m_ReadPos = 0;
     size_t m_WritePos = 0;
-
+private:
+    size_t GetBuffSize()const { return m_nSize + 1; }
 public:
     SocketStream(int32_t size);
     ~SocketStream();

@@ -133,6 +133,7 @@ void Select::ProcessClose()
         {
             it = client_sessionlist.erase(it);
             std::cout << "Session socket_id = " << pSession->GetSocket() << "will close" << std::endl;
+            delete pSession;
         }
         else
         {

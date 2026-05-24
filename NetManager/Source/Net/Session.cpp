@@ -121,6 +121,7 @@ bool Session::HandlePacket(const PacketData& packetData)
         return  false;
     }
     std::cout << "Receive Packet PacketId =" << packetData.GetPacketId() << std::endl;
+    return true;
     if (packetData.GetPacketId() == PacketId::PACKET_CG_LOGIN)
     {
         // std::unique_ptr<game::login::CGLogin> rep = std::static_cast<game::login::CGLogin>(Packet);
