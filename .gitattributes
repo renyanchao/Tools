@@ -1,0 +1,19 @@
+﻿* text=auto
+
+*.h text
+*.hpp text
+*.cpp text
+*.cxx text
+*.cc text
+*.c text
+*.inl text
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.sh text eol=lf
+*.cmake text
+CMakeLists.txt text
+*.md text
+*.proto text
+*.json text
+*.txt text

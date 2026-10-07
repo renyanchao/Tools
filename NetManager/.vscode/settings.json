@@ -1,0 +1,9 @@
+{
+  "cmake.useCMakePresets": "always",
+  "cmake.configureOnOpen": false,
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "files.encoding": "utf8bom",
+  "files.autoGuessEncoding": false,
+  "files.exclude": { "**/Build": true },
+  "search.exclude": { "**/Build/**": true, "**/Tool/**": true }
+}

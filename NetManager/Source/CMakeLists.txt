@@ -44,14 +44,18 @@ target_include_directories(Proto PUBLIC ${PROTO_GENERATED_DIR})
 target_link_libraries(Proto PUBLIC protobuf::libprotobuf)
 source_group("Generated Files" FILES ${PROTO_GENERATED_FILES})
 
-file(GLOB_RECURSE NETMANAGER_BASE_HEADERS ${CMAKE_CURRENT_LIST_DIR}/Net/*.h)
-file(GLOB_RECURSE NETMANAGER_BASE_SOURCES ${CMAKE_CURRENT_LIST_DIR}/Net/*.cpp)
+file(GLOB_RECURSE NETMANAGER_BASE_HEADERS ${CMAKE_CURRENT_LIST_DIR}/Net/Src/*.h)
+file(GLOB_RECURSE NETMANAGER_BASE_SOURCES ${CMAKE_CURRENT_LIST_DIR}/Net/Src/*.cpp)
+list(APPEND NETMANAGER_BASE_HEADERS ${CMAKE_CURRENT_LIST_DIR}/Net/Net.h)
 
 add_library(NetManagerBase STATIC
     ${NETMANAGER_BASE_HEADERS}
     ${NETMANAGER_BASE_SOURCES}
 )
-target_include_directories(NetManagerBase PUBLIC ${CMAKE_CURRENT_LIST_DIR}/Net)
+target_include_directories(NetManagerBase
+    PUBLIC ${CMAKE_CURRENT_LIST_DIR}/Net
+    PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Net/Src
+)
 target_link_libraries(NetManagerBase PUBLIC Proto)
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR}/Net PREFIX "NetManagerBase" FILES

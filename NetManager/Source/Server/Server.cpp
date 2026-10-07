@@ -1,17 +1,17 @@
-﻿#include "Select.h"
+﻿#include "Net.h"
 #include <iostream>
 
 int main()
 {
-	Select selector;
-	if (selector.Init() == false)
+	Net net;
+	if (net.Init() == false)
 	{
-		std::cout << "Error. selector.init fail" << std::endl;
+		std::cout << "Error. net.init fail" << std::endl;
 		return -1;
 	}
 	while (true)
 	{
-		selector.Tick();
+		net.Tick();
 	}
 
 

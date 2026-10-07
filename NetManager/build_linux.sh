@@ -1,9 +1,9 @@
-﻿#!/usr/bin/env sh
+#!/usr/bin/env sh
 set -u
 
 PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 VCPKG_PATH="$PROJECT_ROOT/../../vcpkg"
-BUILD_CONFIG="Debug"
+BUILD_PRESET="linux-debug"
 VCPKG_TRIPLET="x64-linux"
 
 pause_exit() {
@@ -19,7 +19,7 @@ fail() {
 
 echo "[NetManager] Project root: $PROJECT_ROOT"
 echo "[NetManager] vcpkg path: $VCPKG_PATH"
-echo "[NetManager] Build config: $BUILD_CONFIG"
+echo "[NetManager] Build preset: $BUILD_PRESET"
 echo "[NetManager] vcpkg triplet: $VCPKG_TRIPLET"
 
 if [ ! -d "$VCPKG_PATH" ]; then
@@ -30,7 +30,7 @@ else
 fi
 
 VCPKG_TOOLCHAIN="$VCPKG_PATH/scripts/buildsystems/vcpkg.cmake"
-if [ ! -f "$VCPKG_TOOLCHAIN" ]; then
+if [ ! -x "$VCPKG_PATH/vcpkg" ]; then
     echo "[NetManager] Bootstrapping vcpkg..."
     "$VCPKG_PATH/bootstrap-vcpkg.sh" || fail
 else
@@ -42,19 +42,13 @@ if [ ! -f "$VCPKG_TOOLCHAIN" ]; then
     fail
 fi
 
-if [ -d "$PROJECT_ROOT/Build" ]; then
-    echo "[NetManager] Removing old Build directory..."
-    rm -rf "$PROJECT_ROOT/Build" || fail
-fi
+cd "$PROJECT_ROOT" || fail
 
 echo "[NetManager] Configuring CMake..."
-cmake -S "$PROJECT_ROOT" -B "$PROJECT_ROOT/Build" \
-    -DCMAKE_TOOLCHAIN_FILE="$VCPKG_TOOLCHAIN" \
-    -DVCPKG_TARGET_TRIPLET="$VCPKG_TRIPLET" \
-    -DCMAKE_BUILD_TYPE="$BUILD_CONFIG" || fail
+cmake --preset "$BUILD_PRESET" || fail
 
 echo "[NetManager] Building CMake target..."
-cmake --build "$PROJECT_ROOT/Build" --config "$BUILD_CONFIG" || fail
+cmake --build --preset "$BUILD_PRESET" || fail
 
 echo "[NetManager] Build finished."
 pause_exit

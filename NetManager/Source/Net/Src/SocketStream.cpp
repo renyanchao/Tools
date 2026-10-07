@@ -19,6 +19,12 @@
 #include <unistd.h>
 #endif
 
+#ifdef _WIN32
+constexpr int SOCKET_SEND_FLAGS = 0;
+#else
+constexpr int SOCKET_SEND_FLAGS = MSG_NOSIGNAL;
+#endif
+
 SocketStream::SocketStream(int32_t size)
 {
     m_nSize = size;
@@ -266,7 +272,7 @@ bool SocketStream::Flush(socket_t* pSocket)
     size_t first_chunk = std::min(read_len, GetBuffSize() - m_ReadPos);
     if (first_chunk > 0)
     {
-        int nSendSize = send(fd, &m_pBuffer[m_ReadPos], static_cast<int>(first_chunk), 0);
+        int nSendSize = send(fd, &m_pBuffer[m_ReadPos], static_cast<int>(first_chunk), SOCKET_SEND_FLAGS);
         if (nSendSize > 0)
         {
             nTotalSendSize += static_cast<size_t>(nSendSize);
@@ -285,7 +291,7 @@ bool SocketStream::Flush(socket_t* pSocket)
 
     size_t second_chunk = read_len - nTotalSendSize;
     if (second_chunk > 0) {
-        int nSendSize = send(fd, &m_pBuffer[m_ReadPos], static_cast<int>(second_chunk), 0);
+        int nSendSize = send(fd, &m_pBuffer[m_ReadPos], static_cast<int>(second_chunk), SOCKET_SEND_FLAGS);
         if (nSendSize > 0)
         {
             nTotalSendSize += static_cast<size_t>(nSendSize);
